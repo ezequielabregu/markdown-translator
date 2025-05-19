@@ -1,0 +1,761 @@
+# Random experiments {# sec-Rondom-expl}
+
+```{r}
+#| echo: false
+ggplot2::theme_set(ggplot2::theme_minimal(base_size = 13))
+ggplot2::update_geom_defaults("point", list(color = "#1380A1",
+                                            fill = "#1380A1",
+                                            size = 3,
+                                            alpha = .7))
+ggplot2::update_geom_defaults("line", list(color = "#ED6A5A"))
+ggplot2::update_geom_defaults("smooth", list(color = "#ED6A5A")) 
+
+source("../R/_common.R")
+```
+
+## Why are random experiments important?
+
+In the random experiments << Footnote_ref_0 >> the subjects are assigned to the groups (for example, treatment and control). This means that in the assignment of random groups there is a really random process, such as throwing a currency. Eye with confusing the concept of random assignment with the random sample: that sampling is random means that participants are a randomly selected sample of a broader population, while random allocation means that participants, regardless of whether they were selected from a broader population or not, are randomly assigned to different experimental conditions.
+
+[^exp_aleatorios-1]: Throughout the chapter we will use the expressions of random experiments and random experiments. We are also going to use the acronym **RCT** of English*Randomized Controlled Trials*.
+
+::: {.callout-warning icon="false"}
+## Sobre la aleatoridad de las computadoras
+
+Cuando hablamos de un evento aleatorio, hablamos de una entidad abstracta cuyo resultado no se puede predecir exactamente. Para poner este tipo de eventos en el mundo real solemos hechar mano de ejemplos clásicos que involucran una complejidad fìsica tal que resulta imposible predecirlos exactamente, como arrojar un dado o una moneda. El ejemplo de la moneda es la forma más usual de hablar de una variable aleatoria con dos posibles valores equiprobables (aunque parezca que no tanto [@bartovs2023fair]). Sin embargo, esta aleatoridad es muy costosa de reproducir. Es por eso que las computadores utilizan lo que se llama generadores de números pseudo aleatorios[^exp_aleatorios-2]. Estos generadores utilizan series de números generados de forma pseudo aleatoria pero que puede ser recuperada determinìsticamente a partir de una "semilla". Es por eso que cuando simulamos datos en este libro lo primero que hacemos es ejecutar `set.seed(42)` (42 o el número que sea), para de esa forma poder obtener el mismo resultado cada vez que replicamos, o el lector quiere replicar, las simulaciones.
+
+Dicho esto. A fines prácticos, es totalmente razonable utilizar un generador de números pseudo aleatorios para la asignación a grupos experimentales en los experimentos aleatorios.
+:::
+
+[^exp_aleatorios-2]: For more information you can go to read [this] (https://en.wikipedia.org/wiki/pseudorandom_number_generator).
+
+For example, in the simplest case, this means that given a sample of people, we will assign each of them "by throwing a currency" to the control group ($ d = $) or treatment ($ d = $ 1) as seen in the following figure.
+
+![](imgs/exp_aleatorio.png){fig-align="center"}
+
+The random experiments are the *Gold-Standard* to estimate the effect of a treatment. In fact, being the random assignment, we can ensure that, as we mentioned in the chapter [@sec-Pot-outcomes], there is independence ($ (and^0, and^1) \ perp d $). This assures us that the difference in means of the treatment and control groups are a consistent estimator of **ATE**. That said, we will see that there are more "efficient" ways to estimate **ATE**, that is, with May statistical power.
+
+There is an extra reason for this book to start talking in detail of randomized experiments, and when we enter fully in the world of quasi -perimentos it will be very helpful to understand what the problem is and what is the solution that is proposed. This will allow us to have a more concrete idea of ​​the advantages and limitations of each of the quasiexperimental designs that we are going to study later.
+
+On many occasions the random experiments end up being degraded to the category of quasiexperiment. For example: Suppose there is a study that wants to evaluate the effect of a *mindfulness program* in the number of acts of violence in an educational establishment. For this, ten schools were assigned to the group *mindfulness* and ten schools to the control group. So much very nice here, we should carry out the program, measure the amount of acts of violence in each school, make the difference of means and*voul*, we already have an estimator of **ATE**. But sometimes things are not so simple and in the middle of this experiment things will happen. For example, there are a group of schools in the control group that, by pressure from the parents, incorporate a *mindfulness program* their own, while another group of schools, this time of the treatment group, decide not to implement the *mindfulness program* proposed by us because it interferes with the curricula. To top it off, several schools from both groups decide that the participation is voluntary. Anyway, **horror**. What ends up happening to us is that, although the design is a random experiment, the loss of control over the implementation and voluntary participation generate pollution and selection bias, degrading the study of a quasi -operation. That is, the comparison between groups is no longer based on randomization and we will require other statistical controls to correct possible biases. Later we will chat a little more about this.
+
+That said we return to the wonderful world of the << inlinecode_0 >> ideal random experiments << inlinecode_1 >>.
+
+## The ideal experiment
+
+The ideal experiment is that experiment so well planned, so well implemented and so well complied with by its participants that in reality it never happens. However, there is an exception and are, in general, the *Medical Trials*. In fact there are some characteristics that we would expect to see in a **RCT** << Footnote_ref_1 >> and are the following.
+
+[^exp_aleatorios-3]: *Randomized Clinical Trials*, or random clinical trials. They are experimental studies that are used to test the effectiveness or safety of medical procedures or treatments.
+
+- **ADEQUATE CONTROLS**: If we design an experiment to estimate the effect of a treatment, we must have an adequate control group to compare. However, this does not mean that *Group control* is always a group simply not exposed to treatment. For example, the example of the determination of the effectiveness of a drug is well known, in which the *group control* is offered a pill that does not contain the drug being studied but some pill in the same way, size and prescription of consumption but, typically, of sugar. This allows us to be able to discount the effect of consuming a placebo on the final estimate of the effectiveness of the drug << Footnote_ref_2 >>. It is also possible that by ethical considerations we cannot leave the control group with a placebo treatment (for example when there is already an effective treatment for the disease we are studying, if we did it we would deprive the subjects of the group control of their right to health) Group*receives the typical treatment and the* Treatment Group*that of the study, in these cases we will discount the effect of common treatment and our ATE is the effect of the intervention* usual tiatment vote*[^exp_aleatorios-4]: If you are interested in, there is also the effect [nocebo] [*know-cebo.
+
+<!-- -->
+
+-**Random Assignment to Experimental Groups**: As we saw in the chapter [@sec-Pot-outcomes], the best way to ensure that control and treatment groups are the most equal as possible is randomly assigning participants. This, together with a sufficient number of participants, assures us that both groups are equal in all the factors that can influence the result of the experiment, including the factors we do not know.
+
+- **Individuals Must Be Considers in The Assigned Group**: Participants assigned to the treatment group should be considered as treatment, regardless of whether or not they were exposed. This is known as the principle *attempt to treat* and may sound a bit weird. However, we can think of it as a change in the treatment we want to evaluate. For example, there is an experiment in which you want to evaluate the effect of statins on LDL cholesterol. There is a group to which statins and another group give a placebo. A \ $ 18% \ $ of those that were originally assigned to the statin group stopped taking them and a \ $ 38% \ $ of those that were assigned to the placebo group began to take statins during the trial. This means that our experiment would not correctly estimate the effect of *take* the statins, but on the other hand, it would estimate the effect of *be prescribed* with statins. And if we think a little: isn't it something more reasonable to estimate the effect of the second? << Footnote_ref_3 >>
+
+[^exp_aleatorios-5]: A better explanation of this approach and its counterpart (not recommended), protocol analysis can visit this paper \ [this \] https://onlinelibry.wiley.com/doi/10.1111/nep.13709
+
+<!-- -->
+
+- **All Groups Must Be Treated The Same**: For example, if in the previous example we invite people in the group of statins to more followed medical controls, or we evaluate them with more dedication, it will be impossible to separate the benefits of the drug from the benefits of the differences in how we treat patients.
+
+- **Blinded**: For the estimates of an experiment not to be contaminated, it is necessary that participants (or experimental unit) do not know what experimental group belong. This is important because there could be some kind of contamination of the effect such as that the subjects who know that they receive the intervention strive to perform better in the outcome or the opposite when they know "abandoned" the control group tend to give worse.
+
+- **Double Blinded**: Continuing with the aforementioned, it is also desirable that researchers either know which experimental group belongs to an experimental subject or unit. This aims to minimize the differences between the groups. For example, in an experiment to estimate the effectiveness of a communication campaign to motivate vaccination, researchers could space communications with any of the experimental groups, thus contaminating the effect of the intervention itself.
+
+Of course this is not always possible. For example, if an experiment wants to estimate the effectiveness of a new laparoscopic surgeon versus its traditional alternative, it is impossible for the surgeon to carry out the same does not know which group the patient belongs to. However, it is important that in these cases the assignment to the group is delayed as much as possible by reducing the possible influence of other participants (for example, a researcher could be more attentive to the preoperative preparation of an experimental group).
+
+- **Measure All individuals**: All individuals who started the experiment must be measured to evaluate the effect of treatment. This does not always happen and it is something that we are going to talk about later in this chapter.
+
+How nice is experimental design. We are all happy, everything works. Should the book end here?
+
+![](imgs/abogados.jpeg){fig-align="center" width="50%"}
+
+Well, not my spot. I hope to carry out experiments was so easy.
+
+## When the thing is not so ideal
+
+### Randomization by blocks
+
+Intuitively think that the randomization of the subjects to a control group or a treatment group is as simple as launching a currency (and many times it is), this method is known as **simple aletorization**. However, this method may not always be desired. For example, we want to test the advantage of a laparoscopic (minimally invasive) intervention over traditional surgery (in which the abdomen opens). It is reasonable to think that surgeons become better over time regardless of what type of surgery, because the practice does to the teacher. Well, let's imagine that we apply a simple randomization process, it is possible that the first subjects are more frequently assigned to the treatment group than to the control group and the latest vice versa (since randomization is an independent process, the allocation of the previous subject does not condition the one that follows, and this is possible). In this hypothetical but possible scenario, the ATE we want to estimate is contaminated by a confusing variable (the surgeon's ability). How do we avoid this? Well, a reasonable way is to prevent subjects from being assigned to the group all together but as the surgeon goes *Learning*. To do this you can create temporary blocks, for example, the first 10 volunteers, the following 10 and so on. Within each block we make a random assignment, in this way we ensure that there is a more or less balanced number of subjects in the control and intervention group exposed to clumsy, intermediate surgeon and master Level.
+
+!
+
+### *Spillover*
+
+In an ideal experiment, the subjects are allocated to the experimental groups **and They Stay There**. The *spillover* or spill occurs when the subjects of the control group indirectly receive part or all the treatment designed for the intervention group. How is this possible? It is very possible, especially in behavioral interventions. Let's put examples to be understood. Suppose we want to see the effect of an educational intervention as healthy habits to prevent some disease, some subjects are assigned to intervention and receive an educational talk and others nothing. A couple of friends (*i*and*j*) have been randomized to one group and the other respectively. At the end of the intervention, the intervened subject (*i*) tells the talk to the subject of the control group (*j*) and this "receives the treatment". In this example, a subject assigned to a control group receives the treatment for the intervention group. That is, the treatment group *has spilled* towards the control group.
+
+![](imgs/spillover.jpg)
+
+It is worth asking why spillover is relevant in randomized studies. If we return to chapter 3 and review potential outcomes we can see that this framework requires an assumption that we call **Sutva** << Footnote_ref_4 >> or in other words this assumption establishes that the potential results of the subject*J*depend only on their own state of treatment (which was assigned), without being affected by the treatment received by another subject*i*. However, this is not so, since *i* is responsible for the potential result of *J* because "the treatment has applied. In violating this assumption, estimating the **ATE** through a difference in means can be frankly biased by this effect. The spillover is a difficult effect to track and above all difficult to correct, it is frequent in interventions that have to do with communication or information, since communication flows after the intervention uncontrollably for researchers. The best approach is to provide this possibility and establish a priori barriers to reduce the infection that an intervention may have the control group.
+
+[^exp_aleatorios-6]: Del inglés *stable unit treatment value assumption*.
+
+### Reversion of the causal chain (or *reverse causation*)
+
+Causal reversal is one of the biases that can plague our interpretation of the cause-effect chain, especially in observational studies.
+
+Let us invent a hypothetical scenario: let's think that an researcher wants to assess whether the fall rain increases the frequency of people with umbrellas in the street. The answer is obvious to us that we know the laws of nature and that people hate getting wet. Every time it rains, people go out with umbrellas. But what happens if our researcher were a being completely oblivious to all this (let's say a blender of the 5th dimension) and had no previous knowledge. This being, could count the frequency of umbrella on the street and if it rains or not, make a logistics regression (to give an example) to predict the rain based on the number of umbrellas of the street and surely it would be a significant predictor and it is more, it could close its study concluding that an increase of a unit in the frequency of umbrellas increases in a certain percentage the chances that Lluve, that is, that the strands. Our researcher would have incurred a **reverse causal bias**. We might think about the absurdity of the example that this bias is difficult to affect our research, however it is very frequent. Examples of reverse causality are, for example, observe that the neighborhoods with more expensive properties have a shopping center and assume that placing a shopping center in a neighborhood increases the value of the house, when what happens is that the shopping centers decide to place themselves in neighborhoods with expensive properties; or observe that people who exercise have less depressive symptoms, and interpret than exercise reduces depression when it could be that less depressed people have more energy or motivation to exercise.
+
+Experimental designs can protect us better than observational studies of this type of bias, why, fundamentally because in our experimental design we go to *apply* the cause and expect the consequence to happen after this. As a general rule, the causes cannot occur after its consequences and in this way the direction of causality is forced to a single side. However, reverse causality bias can still happen in an experimental trial under certain conditions:
+
+-**Non-Compliance with Treatment (Non-Compliance)** Suppose in the experiment, some subjects are assigned randomly to receiving a treatment, for example a new therapy for hair drop, but the subjects with more hair loss in the first doses of the treatment group feel that the treatment is useless and stop taking the pills. This event introduces a reverse causality bias if we analyze the subjects in case they took the treatment or not (by protocol instead of intention-to-back) since the Outcome (the fall of the hair) generates the exhibition (the amount of medication that the people in the treatment group receive.
+
+- **Anticipated Effects or Reactive Behavior** Sometimes, participants modify their behavior in response to know their assignment. Example: someone assigned to the control group begins to look for alternatives on their own (because it did not receive treatment), and that affects its result. Or someone in the treated group already anticipates that you will have improvement and change your behavior from before real treatment. The result changes in response to the expectation of the treatment, and not necessarily to the treatment itself.
+
+- **Poorly Timed Measurements** In some experiments, the outcome variable may be measured before the treatment takes effect, or even before applying it well. If the results are used to define or change the assigned treatment (by mistake or by design), there is no guarantee of temporality: the result could be influencing the treatment.
+
+::: {.callout-warning icon="false"}
+Si prestaron atención a las secciones anteriores sospecharan que muchos de estos sesgos de causalidad inversa puedan evitarse aplicando analisis ITT y asegurandonos un blinded adecuado, es así
+:::
+
+## Experimentos *between groups*
+
+::: {.callout-warning icon="false"}
+## Hablemos un poco de la nomenclatura
+:::
+
+In this chapter we define randomized experiments as those in which participants are assigned randomly to a treatment or control condition. This approach corresponds, in reality to a single type of German design, the designs known as **Between-Groups**.
+
+In the experiments **Between-Groups**,*participants are randomly distributed Between Different Treatment Conditions, forming Groups that are then shared to each other*. For example, students can be assigned to different teaching methods, hypertensive patients to varied diet plans or older adults to physical exercise programs.
+
+Before analyzing the different types of designs within this category, we will present some **Key Definitions and Notations.**
+
+When we want to schematically represent a design, we will resort to classical notation. According to this, both randomized experiments and quasi-experiences using the letters $ x $ and $ or $ will be represented graphically. A $ x $ indicates the administration of a treatment, and a $ or $ represents an observation. A $ or $ can refer to an observation of one or more variables at a given time. An observation can be any type of measurement, be it a written test, a physiological record, a verbal report, or any other empirical evaluation. In these diagrams, time (such as reading) flows from left to right. When several observations are made, **Subscripts** are used in $ or $ to indicate the time of each measurement.
+
+Using this notation, the randomized experiment among simpler groups is represented as follows:
+
+\
+
+```{=tex}
+\begin{array}{lcl}
+\text{R:} & X & O \\
+\text{R:} &   & O \\
+\end{array}
+```
+\
+
+We will try to understand what this notation means, in principle there are two lines, this indicates that there are two groups, each line begins with a $ r $, this indicates that the subjects were randomly assigned (or random) to the participation of that group, we see in the first line that this group has received a treatment $ x $ and the other not and that both groups have been evaluated after that in an instance $ or $. This design is known as **post-test only** or **Only post-test** since as can be seen in this design the only measure that is taken is after the intervention.
+
+Once we have understood this simple design we can introduce another one more complex like this
+
+```{=tex}
+\begin{array}{lcl}
+\text{R:}& O_1 & X & O_2 \\
+\text{R:}& O_1 &   & O_2 \\
+\end{array}
+```
+The upper row indicates that a group is observed ($ O_1 $), then receives a treatment ($ x $), and is observed again ($ O_2 $). The lower row shows that a second group is observed, it does not receive the treatment (although it can receive an alternative), and then it is observed again. Again, the "$ R: $" indicates random assignment. (The ideal is to make the random allocation after the $ O_1 $, so the position of "$ R: $" does not necessarily indicate the temporal order, we will discuss why of this). In a nutshell, what different this design from the previous one is that there is one more observation, one before the intervention. This type of design is called **pretest-posttest** Now that we have schematically introduced the two fundamental designs of the German experiments between groups we will talk about it.
+
+### Only *Posttest*
+
+Let's recap, post-test Only designs are the simplest form of German experiments between groups where a group is randomly assigned to an intervention, the other to their control condition, and subsequently to that the outcome is evaluated. Summarizing the notation:
+
+```{=tex}
+\begin{array}{lcl}
+\text{R:} & X & O \\
+\text{R:} &   & O \\
+\end{array}
+```
+This design can be written (and analyzed) using a linear model that has the following form:
+
+$$
+\begin{array}
+_Y_{i} &=& \beta_0 + \beta_T T_i + \epsilon_{i}
+\end{array}
+$$ {#eq-postest_model}
+
+Where $ Y_I $ is the value that it adopts $ or $ (that is, our post-intervention outcome), and $ t_i $ is an indicator variable that takes the value $ 1 $ if the participant belongs to the treatment group and the value $ 0 $ if not and $ \ epsilon_ {i} $ represents the term of error (variance not explained by the model). For the models we see in these sections $ \ epsilon_ {i} $ has a distribution $ \ epsilon_ {i} \ sim \ mathcal {n} (0, \ sigma_ \ epsilon^2) $,
+
+We will see how we can use this design (and this model), to estimate the **ATE**.
+
+#### UN/B TEST
+
+A **A/B Test** is a very popular German experiment in the field of web pages design. It consists of presenting users with two versions of the same website (version A and version b) and measure their behavior based on the version presented to them. For example, you can measure the time that users spend on the website, click rate in a button or any other relevant metric. The idea is to compare the performance of the two versions to determine which one is most effective.
+
+In our example, to randomly assign users to two different versions of a website (the previous version **Website A** or control, and the new version **Website B** or intervention) and we will measure the time of permanence in seconds. That is, we want to see if the design change on the website has a positive effect on the time that users spend on the site. In this case, the time of permanence is our outcome and the treatment variable is the version of the website.
+
+We will simulate the data for $ 100 users (50 in each group) and then we will estimate the **ATE** using a linear model. As the data is simulated, we know the real effect of the intervention (the **ATE**) which is $ 5 $ seconds. In fact, we know that the average permanence time in version A is $ 50 seconds and in version B is $ 55 $ seconds << Footnote_ref_5 >>.
+
+[^exp_aleatorios-7]: Why do we say that the assignment is random if at any time we throw a coin? Well, if they look at the code we use for the simulation of the data, we will see that the base times (before adding the treatment, $ \ beta_0 + \ epsilon_ {i} $ in our model) are samples of a $ \ mathcal {n} (50, 10^2) $, that is, a normal one with average $ 50 and standard deviation $ 10 $. Then we assign half for the control group and half for the treatment group (to which we add $ \ beta_t $). As our subjects do not have an "identity", by separating half a step every side since they are random samples taken from a distribution is as if we were randomly assigning the experimental groups.
+
+```{r}
+#| code-fold: true
+set.seed(42)
+# Simulamos el experimento
+n <- 50 # Sujetos por condición
+t <- rnorm(2*n, 50, 10) # Variable que indica la exposición al tratamiento
+t_control <- t[1:n] # Tiempos del grupo control
+t_tratamiento <- t[(n+1):(2*n)] + 5 # Tiempos del grupo tratamiento
+
+data <- tibble(tiempo = c(t_control, t_tratamiento),
+               condicion = c(rep("Website A", n), rep("Website B", n)))
+
+data |>
+  ggplot(aes(x = condicion, 
+             y = tiempo, 
+             color = condicion)) +
+  geom_jitter(width = .2) + 
+  scale_color_manual(values = c("#1380A1", "#ED6A5A")) +
+  labs(x = NULL,
+       y = "Tiempo (s)", 
+       color = NULL) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+In our case the version of the equation model [@eq-post_model] is as follows:
+
+$$
+\begin{array}
+_t_{i} &=& \beta_0 + \beta_T T_i + \epsilon_{i}
+\end{array}
+$$
+
+Where $ t_i $ is the time of permanence in seconds, and $ t_i $ is an indicator variable that takes the value $ 1 $ if the participant belongs to the treatment group (**Website B**) and the value $ 0 $ if it belongs to the control group (**Website B**). In this case, $ \ beta_t $ represents the average difference between the two groups, that is, the **ATE**.
+
+Let's adjust a linear model and see how the thing gives.
+
+```{r}
+#| code-fold: true
+model_postets_only <- lm(data = data, tiempo ~ condicion, model = T)
+modelsummary(list("A/B Postest only"= model_postets_only),
+             coef_rename = c("condicionWebsite B" = "Website B"),
+             statistic = c("Error estándar = {std.error}"),
+             gof_omit = ".*",)
+```
+
+As we can see, the estimate of the treatment effect is << inlinecode_2 >> seconds. This means that the new version of the website has a positive effect in the time of user permanence compared to the previous version.
+
+But was it that the real effect was $ 5 $ second and that the $ \ Hat \ Beta_T $ was an unscrewing estimator of the effect because it is a random experiment? << Footnote_ref_6 >> The answer is simple and complicated at the same time. By simulating the experiment data we are taking a random sample and this $ \ hat \ beta_t $ is nothing more than an estimate, that is, a realization. This has to do with the fact that although the $ \ beta_t parameter is worth $ 5 $ its estimates are not always $ 5 $. What the randomized experiment assures us is that the $ \ Hat \ Beta_T $ estimator is an unscrewing estimate of the $ \ beta_t $ parameter. That is, if we repeat the experiment many times, the average of all estimates $ \ Hat \ Beta_T $ would be equal to $ 5.
+
+[^exp_aleatorios-8]: Let's not confuse that difference of << inlinecode_3 >> with a bias like the one we saw in the [#se-po-outcomes] chapter. In that case, remember that there were hopes involved.
+
+As we simulate the data, we can simulate $ 1000 $ realizations of the experiment and see what it looks like, isn't this?
+
+```{r}
+#| code-fold: true
+# Simulemos mil experimentos
+
+set.seed(42)
+# Simulamos el experimento
+n <- 50 # Sujetos por condición
+
+betapostest <- c()
+beta_T <- 5
+d <- c(rep("Website A", n), rep("Website B", n))
+
+for (i in 1:1000) {
+  t <- rnorm(2*n, 50, 10) # Variable que indica la exposición al tratamiento
+  t_control <- t[1:n] # Tiempos del grupo control
+  t_tratamiento <- t[(n+1):(2*n)] + beta_T # Tiempos del grupo tratamiento
+  
+  data <- tibble(tiempo = c(t_control, t_tratamiento),
+                 condicion = d)
+  
+  model_postets_only <- lm(data = data, tiempo ~ condicion, model = T)
+  betapostest <- c(betapostest, coef(model_postets_only)[2])
+}
+
+betas_post <- tibble(betapostest = betapostest)
+mean_beta <- betas_post |>
+  summarise(m_beta = mean(betapostest))
+
+betas_post |>
+  ggplot(aes(x = betapostest)) +
+  geom_histogram(fill = "#1380A1", 
+                 alpha = .6,
+                 bins = 30) +
+  geom_vline(xintercept = mean_beta$m_beta, 
+             color = "#1380A1", 
+             linewidth = 1) +
+  geom_label(data = mean_beta,
+            aes(label = paste("Efecto promedio =", round(m_beta,2))),
+            x = 5, 
+            y = 50)  +
+  labs(x = "Estimación del efecto del tratamiento",
+       y = NULL) +
+  theme_bw()
+```
+
+Well, the average of the thousand estimates of $ \ beta_t $ is << inlinecode_4 >>, we can sleep without blanket.
+
+###*Pretest-posttest*Do you think that the simple design of the previous section is missing something? There is something that anyone who has read, planned or carried out an experience has in mind. It is more powerful to measure the* outcome * before the intervention and after the intervention. This allows us to have a better estimate of the treatment effect, since we can control by the effect of the initial measurement. In this case, the design is called **pretest-posttest** and it is represented:
+
+```{=tex}
+\begin{array}{lcl}
+\text{R:}& O_1 & X & O_2 \\
+\text{R:}& O_1 &   & O_2 \\
+\end{array}
+```
+To analyze the results of this type of experiments, we have to add the measure *pre*in some way. We do it as follows:
+
+$$
+\begin{array}
+_Y_{i} &=& \beta_0 + \beta_T T_i + \beta_X X_i + \epsilon_{i}
+\end{array}
+$$ {#eq-pre_postest_model}
+
+Where everything represents the same as in the equation [@eq-post_model], but now $ x_i $ is the measure *pre* of the subject $ i $. In this case, $ \ beta_t $ again represents the effect of treatment and $ \ beta_x $ represents the effect of measure *pre*.
+
+Let's look at the example of the previous section if we add a measurement
+
+#### We measure something before at the A/B Test
+
+To the data that we simulate before we are going to aggravate a new measure, the time that is on the website before the intervention. We are going to suppose, as in the previous example, that the average permanence time in version A is $ 50 seconds and in version B is $ 55 $ seconds. We will simulate the data for $ 100 $ users ($ 50 in each group).
+
+Let's start looking at the data as we saw them before
+
+```{r}
+#| code-fold: true
+# Pretest-posttest ####
+set.seed(123)
+n <- 50
+time_post <- rnorm(2*n, 50, 10)
+time_pre <-time_post + rnorm(n,  0, 5)
+
+control_pre  <- time_pre[1:n] 
+tratamiento_pre  <- time_pre[(n+1):(2*n)]
+control_post <- time_post[1:n] 
+tratamiento_post <- time_post[(n+1):(2*n)] + 5
+
+data_pre <- tibble(tiempo_pre = c(control_pre, tratamiento_pre),
+                   tiempo_post = c(control_post, tratamiento_post),
+                   condicion = c(rep("Website A", n), rep("Website B", n)))
+
+data_pre %>% ggplot(aes(x = condicion, 
+                        y = tiempo_post, 
+                        color = condicion)) +
+  geom_jitter(width = .2) + 
+  geom_smooth(method = "lm", se = F) +
+  scale_color_manual(values = c("#1380A1", "#ED6A5A")) +
+  labs(x = NULL,
+       y = "Tiempo post (s)", 
+       color = NULL) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+It looks quite similar to what we saw before, right? Let's try to measure the effect of treatment as we did in the previous example, using the equation [@eq-post_model]. If we adjust that model, which does not take into account custom*pre *, we will obtain the same estimates as in the previous example. It makes sense, right? Of course, because we use the same seed to generate the data.
+
+```{r}
+#| code-fold: true
+modelo_pre_basico <- lm(data = data_pre, 
+                        tiempo_post ~ condicion)
+
+modelsummary(list("A/B Sin incluir el tiempo pre"= modelo_pre_basico),
+             coef_rename = c("condicionWebsite B" = "Website B"),
+             statistic = NULL, 
+             gof_omit = 'DF|Deviance|R2|AIC|BIC|Log.Lik|F')
+```
+
+Is this wrong? Of course not. But let's look at the data, but this time using pre -predictor time.
+
+```{r}
+#| code-fold: true
+data_pre %>% ggplot(aes(x = tiempo_pre, y = tiempo_post, color = condicion)) +
+  geom_jitter(width = .2) + 
+  geom_smooth(method = "lm", se = F) +
+  scale_color_manual(values = c("#1380A1", "#ED6A5A")) +
+  labs(x = "Tiempo pre (s)",
+       y = "Tiempo post (s)", 
+       color = NULL) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+What we can see is that, because we simulate the data, the time*pre *and the time*post *are correlated, that is, part of the variability we have in time*post *we can explain it for differences in time*pre *. Then we are going to incorporate time* pre *as a predictor in our model. In this case (using the equation [@eq-pre_postst_model]). Let's compare the estimates of this model with those of the equation [@eq-post_model].
+
+```{r}
+#| code-fold: true
+modelo_pre_basico <- lm(data = data_pre, tiempo_post ~ condicion)
+modelo_pre <- lm(data = data_pre, tiempo_post ~ condicion + tiempo_pre)
+
+modelsummary(list("A/B Sin incluir el tiempo pre"= modelo_pre_basico,
+                  "A/B Pretest-postest only"= modelo_pre),
+             coef_rename = c("condicionWebsite B" = "Website B",
+                             "tiempo_pre" = "Tiempo-pre"),
+             statistic = NULL, 
+             gof_omit = 'DF|Deviance|R2|AIC|BIC|Log.Lik|F')
+```
+
+Now the estimator of the pretest-postst model is << inlinecode_5 >> seconds. An estimate closer to the value of the $ \ beta_t $ parameter that we know is $ 5 $. This, as we saw in the previous example, does not mean that the estimator is biased in the case of not using the timpo*pre *. But let's see that the estimate is better and we will see why.
+
+We repeat the simulation of $ 1000 $ experiments, but now using the pretest-postst model. Let's see how $ \ beta_t $ estimates are distributed including and not including time*pre *.
+
+```{r}
+#| code-fold: true
+# Simulemos mil experimentos
+
+set.seed(123)
+# Simulamos el experimento
+n <- 50 # Sujetos por condición
+
+betapostest <- c()
+betaprepostest <- c()
+beta_T <- 5
+d <- c(rep("Website A", n), rep("Website B", n))
+
+for (i in 1:1000) {
+  time_post <- rnorm(2*n, 50, 10)
+  time_pre <- time_post + rnorm(n,  0, 5)
+  
+  control_pre  <- time_pre[1:n] 
+  tratamiento_pre  <- time_pre[(n+1):(2*n)]
+  control_post <- time_post[1:n] 
+  tratamiento_post <- time_post[(n+1):(2*n)] + beta_T
+  
+  data <- tibble(tiempo_pre = c(control_pre, tratamiento_pre),
+                     tiempo_post = c(control_post, tratamiento_post),
+                     condicion = d)
+  
+  model_postets_only <- lm(data = data, tiempo_post ~ condicion, model = T)
+  betapostest <- c(betapostest, coef(model_postets_only)[2])
+  
+  model_pre_postets <- lm(data = data, tiempo_post ~ condicion + tiempo_pre, model = T)
+  betaprepostest <- c(betaprepostest, coef(model_pre_postets)[2])
+}
+
+betas <- tibble(beta = c(betapostest, betaprepostest),
+                modelo = c(rep("Posttest only", 1000), rep("Pretest-posttest", 1000)))
+
+mean_beta <- betas |>
+  group_by(modelo) |>
+  summarise(m_beta = mean(beta)) |>
+  mutate(ypos = c(50, 100))
+
+betas |>
+  ggplot(aes(x = beta, fill = modelo)) +
+  geom_histogram(alpha = .5,
+                 bins = 30,
+                 position = "identity") +
+  geom_vline(data = mean_beta,
+             aes(xintercept = m_beta, 
+                 color = modelo), 
+             linewidth = 1) +
+  geom_label(data = mean_beta,
+            aes(label = paste("Efecto promedio =", round(m_beta,2)),
+                y = ypos),
+            x = 5,
+            show.legend=FALSE)  +
+  scale_color_manual(values = c("#1380A1", "#ED6A5A")) +
+  scale_fill_manual(values = c("#1380A1", "#ED6A5A")) +
+  labs(x = "Estimación del efecto del tratamiento",
+       y = NULL,
+       fill = NULL,
+       color = NULL) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+Here comes the important. We can see that when we include the measurement of time *pre* in the model, the distribution of the estimates of $ \ beta_t $ is narrower. This means that the variability of the estimates is lower and that the standard error of the estimation of the treatment effect is lower. In other words, by including the measurement *pre* in the model, we are reducing the variance not explained by the model and, therefore, improving the precision of our estimates and with it the statistical power of our test.
+
+In fact, for $ Infinite we can schedule a relationship between the variances not explained by the models that include or not the time *pre*. What we are talking about is $ \ Sigma_ \ epsilon^2 $ in both models, that is, the variance of the error term.
+
+$$
+\sigma^2_{\epsilon \,pre-post} = \sigma^2_{\epsilon \, post} (1 - \rho_{pre-post}^2)
+$$
+
+Where $ \ sigma^2 _ {\ epsilon \, pre-post} $ is the variance of the error term in the model that includes the measure *and $ \ sigma^2 _ {\ epsilon \, post} $ is the variance of the error term in the model that does not include the measure*pre *. $ \ rho_ {pre-post} $ is the correlation between measures*pre *and*post *. This relationship tells us that by including the measure* pre *in the model, we are reducing the variance of the error term by a percentage equal to $ 1 - \ rho_ {pre -post}^2 $. This means that the greater the correlation between the measures*and *post*, the greater the reduction of the variance of the error term and, therefore, the greater the improvement in the accuracy of our estimates and the statistical power of our tests.
+
+This relationship for **n infinite** We can see it graphically in the following figure. The figure shows the relationship between the correlation between the measures *pre* and *post* and the standard error of the estimation of the treatment effect.
+
+```{r}
+#| code-fold: true
+errores <- tibble(rho = seq(0, 1, 0.01),
+                  sigma_Ancova = (1-rho^2))
+
+errores %>% ggplot(aes(x = rho,
+           y = sigma_Ancova)) +
+  geom_line(linewidth = 1) + 
+  geom_hline(yintercept = c(0,1), linetype = "dashed") +
+  labs(x = "Correlación entre pre y post",
+       y = "Error estándar de la estimación del efecto del tratamiento") +
+  theme_bw()
+```
+
+We can see that with correlation $ 1 $ between the measures*pre*and*post*the power would be infinite, but well, remember that this is for **n infinite**.
+
+## Cluster designs
+
+Cluster designs are an experimental design form where the subjects are assigned to groups (clusters) and then assigned treatments to these groups. This approach is useful when it is not practical or possible to assign treatments to individuals independently.
+
+The advantages of cluster designs are several:
+
+- Sometimes it can be more practical or convenient to randomly assign groups than individuals. For example, in the school system they can allow us to assign courses or schools to different treatments but not students
+
+- Randomization at the cluster level can be useful to minimize the effects of dissemination, imitation of treatments or other adhesion problems. For example, for a student it is more difficult to be *crossover* if the different treatment has it in another classroom or school instead of their bank partner.
+
+- They may be necessary to avoid *spillovers*. In the study of the SMSS campaign to improve the vaccination rate against the HPV they would have made the randomization at the Barrio or Ciudad level, they would not have had the *spillover* because a neighbor tells you about the SMS he received.
+
+- They may be necessary to avoid externalities. For example, if an experiment is being done to evaluate the effect of a treatment within a certain closed group (a city), the increase in employability for the treatment group can generate that there are less jobs available for the control group and that its employment rate goes down, not as a consequence of being less “employable”. Randomizing by city this effect can be reduced.
+
+- Some programs apply yes or yes to groups. For example, a media campaign, a group therapy or a policy change at the school level.
+
+- The effects can be greater when applied to an entire group. This has to do with what we must bear in mind that, if what we want to evaluate is an intervention that will be applied at the group level, if we do it randomly at the individual level we can be underestimating its effect. For example, an intervention that improves the reading skills of an entire course can have a synergetic effect that would not be present if only half of the course is exposed to treatment and the teacher must alternate between one subgroup and the other.
+
+Something very important is that randomization at the cluster level does not mean that we will stop paying attention to individuals and use measures at the cluster level. In fact, the opposite, although we are going to randomly at the group level, we will measure the *outcome* for each individual and the relationship between the variability between and intra groups will play an important role (more than this in the following sections). In case we randomly at the group level and then we simply take a *outcome* by group we are not facing a cluster design but we simply change the experimental unit of the individual to the group.
+
+Everything seems ideal, right? But none of this comes at no cost. In general, cost is statistical power. That is, to have the same statistical power as randomizing at the level of individual, we will need more (and sometimes many more) experimental subjects divided into groups. More than in the section that follows.
+
+### hierarchical data analysis
+
+To analyze this type of data we use statistical models that take into account the hierarchical structure of the data. In this book we will call them in general hierarchical models << Footnote_ref_7 >>. Below we have the structure of a hierarchical linear model with a single level of grouping << Footnote_ref_8 >>.
+
+[^exp_aleatorios-9]: They can also be called *hierarchical linear models*, *linear mixed-effect model*, *mixed models*, *nested data models*, *random coefficient*, *random-effects models*, *random parameter models*o *split-all design*. But we are always talking about them.
+
+[^exp_aleatorios-10]: For example, it serves to model the students of a school, but we could also have models that allow us to model the students of a school, which in turn belongs to a school district, to a province, etc. Having more grouping levels, but that is left out of the reach of this book.
+
+$$
+\begin{array}
+_Y_____} & water + + + \epsylon_{ij} \\
+\mu_j &=& \beta_0 + \beta_T T_j + r_j
+\end{array}
+$$
+
+Where both r_j $ and $ \ epsilon_ {ij} $ has zero hope and variance $ \ sigma^2_ {inter-cluster} and $ \ sigma^2_ {intra-cluster} $ respectively. In the previous equation $ T_J $ is an indicator variable that takes the value $ 1 $ if the school, and not the participant as before, belongs to the treatment group and the value $ 0 $ if not. In this way, if the school belongs to the Treatamineto Group, it will be $ \ mu_ {j | d_j = 1} = \ beta_0 + \ beta_t + r_j $ while it belongs to the control group will be $ \ mu_ {j | d_j = 0} = \ beta_0 + r_j $, and the hope of the difference between the two (since the hope of $ e (r_j) just the magnitude of the treatment effect $ \ beta_t $.
+
+### The power and intraclase correlation (ICC)
+
+Intraclase correlation (ICC) is a descriptive statistic that indicates to what extent the results: 1) tend to be similar within each cluster, or 2) tend to differ between different clusters, in relation to the results observed in other groups. It is defined as follows:
+
+$$
+Icc = \ frac {\ sigma^2_ {inter-cluster}} {\ sigma^2_ {inter-cluster} + \ sigma^2_ {intra-cluster}}
+$$
+
+Where $ \ sigma^2_ {inter-cluster} $ is the variance between clusters, that is, how much the stockings of the clusters are varied, and $ \ sigma^2_ {intra-cluster} $ is the variance within the clusters, that is, how much you varied the measurements of each individual within each cluster.
+
+As mentioned above, randomization at the cluster level has its cost. If the outcomes within each cluster are highly correlated and the magnitude of the results varies considerably between clusters, then it is likely that the participants within the same group have similar results, and the ICC will be high. In these cases, the data from an individual provides almost as much information as if all members were included. Therefore, the effective sample size is closer to the number of clusters than to the total size of the individual's sample.
+
+Going clean. If the clusters are more similar to each other, the statistical model will be more powerful, with an effective sample size close to the number of individuals while if the clusters differ greatly from each other the statistical power falls, approaching an effective sample size equal to the amount of clusters.
+
+It is for the latter that in practice it is always convenient to aggravate more clusters than individuals << Footnote_ref_9 >>. But of course, that is what is usually most expensive.
+
+[^exp_aleatorios-11]: A numerical example, given a total of $ 1000 participants, the power would be $ 0.75 $ if there were $ 50 groups of $ 20 participants each, while the power would be only $ 0.45 $ with $ 20 $ 20 groups of $ 50 $ 50 participants each, assuming a $ 0.1 $ ICC $ 0.1 $.
+
+### An example with data
+
+Let's simulate a small example. Suppose that, without an apex of creativity, we want to evaluate the effectiveness of an educational intervention that can only be applied at school level. The *Outcome* of interest at the student level will be the note obtained in a standardized examination of mathematics. Let us take into account the equation @eq-cluster_model, in our case $ Y_ {ij} $ would be the note of each student, while $ Mu_J $ would be the average of each school.
+
+The averages of each school will create them usitilizing the parameters $ beta_0 = $ 50 and $ beta_t = $ 10, that is, the magnitude of the effect we should recover then is $ 10 $. In addition, the error will be $ r_j \ sim \ mathcal {n} (0, \ sigma_ {schools}^2) $, with $ \ sigma_ {schools} = $ 5. We will simulate $ 40 schools, assigning half to the group *Treatment*and the other half to the group *Control*. Let's see what happens to the stockings of the schools that we are going to simulate.
+
+```{r}
+#| code-fold: true
+# Data jerárquica
+set.seed(42)
+n_escuelas <- 40
+
+# Supongamos que tengo n_escuelas escuelas, cada una de ellas tiene una media de la calificacion de nota de matemática
+mu_j <- rnorm(n_escuelas, 50, 5)
+  
+# Las primera 3 son asignadas al grupo tratamiento y las otrasa tres al grupo control
+d <- c(rep("Tratamiento", n_escuelas/2), rep("Control",  n_escuelas/2))
+
+# El efecto del tratamiento es 10, entonces a la media de cada escuela que pertenece al grupo tratamiento
+# le sumamos 10
+beta_T <- 10
+
+# Armo un tibble con las escuelas
+escuelas <- tibble(tratamiento = d, media = mu_j) |>
+    mutate(media = if_else(tratamiento == "Tratamiento", media + beta_T, media)) 
+
+# Graficamos los promedios de las escuelas
+escuelas |>
+  ggplot(aes(x = tratamiento, 
+             y = media,
+             color = tratamiento)) +
+  geom_jitter(size = 2, 
+              alpha = .6,
+              width = .2) +
+  scale_color_manual(values = c("#1380A1", "#ED6A5A")) +
+  labs(color = NULL, x = NULL, y = "Media de la escuela j") +
+  theme_bw() +
+  theme(legend.position = "top")
+
+```
+
+As expected, school stockings in the treatment group are above the stockings in the control group. However, there are schools for which this is not. That is why it is very important to model school (the cluster) as a possible source of variability.
+
+Now what we can do is simulate students' notes within each school $ y_ {ij} $. For that we are going to use the first line of the equation @eq-cluster_model. In this case, the $ mu_j $ will be obtained in the previous point with a $ \ epsilon_ {ij} \ sim \ mathcal {n} (0, \ sigma_ {student}^2) $, with $ \ sigma_ {student} = 10 $. Let's look at what this data looks like.
+
+```{r}
+#| code-fold: true
+#| fig-width: 9
+#| fig-height: 12
+# Data jerárquica
+
+# Ahora vamos a muestrear 20 estudiantes en cada escuela, con media mu_j y un sigma de 10
+alumnos <- tibble(tratamiento = rep(d, each = 20), 
+                  order =rep(1:n_escuelas, each = 20),
+                  escuela = rep(paste("Escuela", 1:n_escuelas), each = 20),
+                  media = rep(mu_j, each = 20)) |>
+  mutate(media = if_else(tratamiento == "Tratamiento", media + beta_T, media)) |>
+  rowwise() |>
+  mutate(Yij = rnorm(1, media, 10)) |>
+  select(-media)
+
+# Graficamos los promedios de las escuelas
+alumnos |>
+  ggplot(aes(x =  fct_reorder(escuela, desc(order)), 
+             y = Yij,
+             color = tratamiento)) +
+  geom_jitter(size = 1, 
+              alpha = .6,
+              width = .2) +
+  scale_color_manual(values = c("#1380A1", "#ED6A5A")) +
+  labs(color = NULL, x = NULL, y = "Yij") +
+  coord_flip() +
+  theme(legend.position = "top")
+
+```
+
+Here we see that the variability of schools is added the variability of the subjects.
+
+Now we are going to try to recover the effect size by adjusting a linear model of mixed effects << Footnote_ref_10 >>.
+
+[^exp_aleatorios-12]: Without too much detail, a linear model of mixed effects takes into account the hierarchical structure of the effect. In this particular case we will allow the model that the midpoint of each school is considered a *random factor*.
+
+```{r}
+#| code-fold: true
+mlmer <- lmer(Yij ~ tratamiento + (1|escuela), data = alumnos)
+modelsummary(list("Escuelas"= mlmer),
+             coef_rename = c("tratamientoTratamiento" = "Tratamiento"),
+             statistic = NULL, 
+             gof_omit = 'DF|Deviance|R2|AIC|BIC|Log.Lik|F')
+```
+
+Let's try to understand what this model tells us. << Inlinecode_6 >> It is nothing other than $ \ hat {\ beta_0} $ that, according to what we simulate, should be worth $ 50, which was the value of the parameter we use to generate the stockings of schools before adding the error $ r_j $ and the effect of treatment. Speaking of the effect of treatment, we can see that for this particular simulation, the estimate of the effect of the intervention $ \ beta_t $ that we know is worth $ 10 is estimated as $ \ hat {\ beta_t} = 12.92 $. Another interesting thing that we can see is that the model also estimates the variability of errors where << inlinecode_7 >> is an estimate of $ r_j $ and << inlinecode_8 >> is an estimate of $ \ epsilon_ {ij} $, with a value of $ 9.73 $. Both variability values ​​are similar to those we use to make simulations.
+
+But ... why the estimated value of the effect is $ \ hat {\ beta_t} = 12.92 $ instead of $ 10 $? Well, because it is a simulation with their respective variability. For example, let's see what happens if we simulate $ 1000 experiments.
+
+```{r}
+#| code-fold: true
+# Data jerárquica
+set.seed(12)
+
+n_escuelas <- 100
+betalmer <- c()
+beta_T <- 10
+d <- c(rep("Tratamiento", n_escuelas/2), rep("Control",  n_escuelas/2))
+
+for (i in 1:1000) {
+  mu_j <- rnorm(n_escuelas, 50, 5)
+  
+  alumnos <- tibble(tratamiento = rep(d, each = 20), 
+                    escuela = rep(paste("Escuela", 1:n_escuelas), each = 20),
+                    media = rep(mu_j, each = 20)) |>
+    mutate(media = if_else(tratamiento == "Tratamiento", media + beta_T, media)) |>
+    rowwise() |>
+    mutate(Yij = rnorm(1, media, 10)) |>
+    select(-media)
+  
+  mlmer <- lmer(Yij ~ tratamiento + (1|escuela), data = alumnos)
+  betalmer <- c(betalmer, fixef(mlmer)[2])
+}
+
+betas <- tibble(betalmer = betalmer)
+mean_beta <- betas |>
+  summarise(m_beta = mean(betalmer))
+
+betas |>
+  ggplot(aes(x = betalmer)) +
+  geom_histogram(fill = "#1380A1", 
+                 alpha = .6,
+                 bins = 30) +
+  geom_vline(xintercept = mean_beta$m_beta, 
+             color = "#1380A1", 
+             linewidth = 1) +
+  geom_label(data = mean_beta,
+            aes(label = paste("Efecto promedio =", round(m_beta,2))),
+            x = 10, 
+            y = 50)  +
+  labs(x = "Estimación del efecto del tratamiento",
+       y = NULL) +
+  theme_bw()
+```
+
+We see that if we make a histogram of all the estimates of the parameter based on the $ 1000 $ simulations of the data, the average is << inlinecode_9 >>, a value quite close to the real value of $ 10 $ << Footnote_ref_11 >>. Now we can remain calm.
+
+[^exp_aleatorios-13]: Recall that in practice **Never** We will know the real value of the parameter and that this is an advantage that we only have in these cases in which we simulate "samples" from known values ​​of the parameters.
+
+## Lack of compliance with the assigned treatment
+
+In this chapter we saw how random experiments should be ideally but that reality sometimes has other plans. So far we have seen that the subjects may not be randomly distributed through a variable, for example, temporary (and we must solve it with a **blocks**), it may be that we interpret the causal chain inappropriately (the **reverse causation bias**) and may even happen that the subjects of the control group is indirectly contaminated with the intervention (the **spillover**). But none of these scenarios explains a third problem, what happens if individuals do not follow the intervention proposed (the treatment group or the control group)? This situation is called **"Failure" (or not adherence) to the Allocation of Treatment**
+
+There are two types of non-adherence:
+
+- ** Participants*NO-SHOWS ***: This condition happens when participants randomly assigned to the treatment condition could refuse to receive the treatment, not present themselves to the treatment session or prefer the comparison treatment and seek it instead of the experimental treatment to which they had been assigned. In other words they are subjects that following the notation of potential outcomes, s eán: $ d_0 t_1 $ << footnote_ref_12 >>
+
+-** Participants*crossovers ***: In these cases the condition is opposite, some participants randomly assigned to the comparison condition could find out about the treatment and, in some way, get into the condition of treatment or receive a similar treatment outside the scope of the study. Or, researchers (motivated by other external causes) could violate the random allocation protocol and expose some participants to the treatment condition that were originally assigned to the comparison condition. That is $ d_1 t_0 $
+
+![](imgs/no-adherence-03.jpg)
+
+[^exp_aleatorios-14]: Recall that in the Potential Outcomes we define $ D $ to receive the treatment and $ T $ to the group that was assigned.
+
+::: {.callout-warning icon="false"}
+## Crossovers vs spillovers
+
+En este punto es probable que esten confundiendo estos dos términos. Clarifiquemos. La diferencia puede parecer sutil pero en el**spillover** se vulnera la separación entre los grupos, por lo que la intervención *contamina* sujetos del grupo control pero este efecto es indirecto (es posible que el sujeto reciba la intervención parcial, o si la condición de control es otro tratamiento, termine con recibiendo dos intervenciones -la de su grupo y aquella con la que se contamino-). En cambio en el **crossover** hay una reasignación no intencionada o violación del protocolo, un sujeto asignado al grupo control, pasa al grupo de tratamiento.
+
+Tratemos de resumir las diferencias en esta tabla:
+
+|                      | Crossover                                                                   | Spillover                                  |
+|------------------|----------------------------------|--------------------|
+| ¿Quién cambia?       | El participante recibe otra condición, es el equivalente a cambiar de grupo | El participante no cambia de grupo         |
+| ¿Qué falla?          | La adherencia al grupo asignado                                             | El aislamiento entre grupos                |
+| ¿Por qué se produce? | Violación del protocolo                                                     | Influencias indirectas entre participantes |
+:::
+
+As we had seen before the spillovers compromise the condition **Sutva** on which the estimation of **ATE** is based as a difference between the outcomes of both groups. In this case, non -adhesion compromises internal validity, since it can skew the estimates of the effects of treatment. To maintain the comparability of the participants in the treatment conditions, it is best to try to minimize the breach of the treatment protocols.
+
+Several strategies can be implemented to prevent this from happening, for example:
+
+- Make both attractive groups. The initial temptation when designing an experiment is that the control group receives absolutely nothing. This makes individuals in the control group quickly feel disgusted since they expect some benefit in participating and seeking to move to the treatment group.
+
+- Try to make both groups "easy to follow" for participants. Sometimes the treatment group has to follow a lot of tasks, while the control group only a few. This scenario makes many subjects be discouraged in the treatment group and becomes *no-shows*.
+
+- Ensure before the assignment that individuals will be able to comply with any of the interventions. It is important to make the explicit commitment to the subjects who will complete the intervention, despite the exclusion criteria, they must be designed conscientiously to eliminate those subjects who will not be able to comply with it. For example, it is unlikely that a subject with a work of $ 8 hours a day will be able to meet an intervention of $ 6 $ hours of daily walk.
+
+We said that we are going to try to avoid the lack of compliance, however we work with human beings and it is very likely that we can minimize this fact but will continue to occur. Under these conditions the **ATE** cannot be estimated as **SDO** because not all subjects assigned to each group complied with Rajatabla. But do not despair that there are alternatives.
+
+### Strategies to estimate the ATE in non -compliance
+
+#### Análisis *treatment as received*
+
+Let's think about the scenarios previously raised, when they occur *no-shows* and *crossovers* we say that the subjects "change group" upon receiving or not receiving the treatment. If that happens, wouldn't it be logical to analyze the subjects according to the treatment received in the corresponding group?
+
+Let's see the scenario formalize a little. In the analysis by*Treatment Received*, two new groups are formed: **a)** A treatment group that contains the $ d_1 t_1 $ (assigned to the treatment and that received the treatment) and at $ d_1 t_0 $ (those assigned to the condition control that received the treatment, the crossover) and **b)** a control group formed by the $ d_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 t_0 T_1 $ (those assigned to the treatment group that decided not to do it or went to the control, that is to say the *no-shows*)
+
+It seems logical but what is the problem. Well the radical problem of this approach is that *after random assignment*, then there may be systematic differences between the groups.
+
+Let's think about an example. Suppose a study wants to try the effect of a new drug against lung cancer. By randomly assigning groups there are subjects with a different degree of severity of the disease in both groups. However, subjects with the greatest severity of the control group are very concerned about their illness and decide to find the treatment on their own (they go to the treatment group), creating a systematic difference. Now the treatment group has subjects with more severe clinical pictures. We know that subjects with more severe pictures progress worse, then, if the treatment is effective, this analysis tends to underestimate the effect of the drug. This analysis is also subject to including a reverse causality bias (review the corresponding section).
+
+#### Analysis *by protocol*
+
+This analysis is another approach that, although it may seem attractive to the naked eye, is not recommended. This analysis compares **ONLY** to those who completed the treatment protocols as originally assigned or $ D_1 t_1 $ (in the treatment group) and $ D_0 T_0 $ (in the control group), the subjects $ d_1 t_0 $ and the $ d_0 t_1 $ are directly excluded from all analysis.
+
+This analysis has the same problem as the previous approach. Why? Because it generates systematic differences between groups again. We must think that the subjects do not abandon one or another group randomly (such as the one that generated the groups) but by key conditions (often related to the same allocation to the group) as we saw in the previous example. In this way, control groups can lose, for example, subjects with more severe pictures, because they decide to go into treatment, or the treatment group losing subjects with little response to treatment, because before the low response they decide to leave and move on to the control group. In this way and depending on the case this approach has to underestimate or overestimate the effect. Its use is not advised.
+
+### Focus by **Treatment Attention**
+
+Also called *attempt-to-ocot* This approach is the one that is preferred above any other. In the other two we saw that the assignment or exclusion of a post-aliatorization group generates systematic errors that pollute the estimate of the effect and can open a door to the reverse causality bias. Then the best solution is simply not to modify the situation of the post -German subjects, that is, this approach. The motto of this approach is **Analyze Them as You Randomized Them** That is, the control group include all subjects assigned randomly to the control group ($ T_0 $) independent if they received the intervention or not (any $ d $ d $ d) and in the group treatment all $ T_1 $ equally.
+
+When we make this approach, the estimate of the effect charges another reality and we call it estimation of the intention of treatment (or *estimate here*) and has the following way:
+
+$$ \text{ITT estimate} = \bar{Y}_T - \bar{Y}_C \ $$
+
+Where $ \ bar {y} _t $ is the average result for the treatment group as originally assigned, and $ \ bar {and} _c $ is the average result for the comparison group as originally assigned.
+
+The estimate **ITT** has the advantage of comparing participants that are **Randomly equivalent**. But it can be difficult to interpret, since it is the *Average Effect of Having Offered the Treatment Comparced to Not Having offered it*, more than the average effect of treatment if everyone had received the assigned treatment protocol.
+
+Let's give an example, it is assigned to subjects to eat salmon three times a week to lower cholesterol, this intervention has a real effect of reducing cholesterol by $ 20%(this would be the **ATE** in an ideal world). But it happens that by applying the intervention half of the subjects do not consume the salmon (that is, they are *no-shows*), they do not have an effect, that is, they have $ 0%of exchange. If we do an analysis of **ITT**; The *average* change in the subjects assigned to the treatment group ($ \ bar {and} _t $) is $ 10%(half changed $ 20%and the other half $ 0%$) and the average change of the other group (control, $ \ bar {and} _c $) is $ 0%$ (we do not include *crossover* in this example so as not to complicate). That is, the estimator **ITT** is $ 10%$. The effect is lower, why is this approach better?
+
+Well for a couple of reasons:
+
+1. **there are no errors in the direction of the causal chain**, our goal is to evaluate as a treatment (cause) generates an effect. As we saw in the previous approaches, when a group change occurs after the Germanization it is common for this change to be motivated by the very effect of the intervention (an intervention that does not work motivates that the subjects pass the control group, or a very effective intervention seduces the control group to be passed to the intervention) in this way the causal chain is invested and it is the effect that generates the treatment or not of the subjects. When analyzing the subjects as assigned there is no reasons open to the reversal of causality.
+
+2. **It may be more relief to calculate The Itt than the Ate**, especially in public policies or in interventions with humans, the research group (and the group that will apply the results) can only reach the degree of a recommendation, that is, for example, they tell a group of people who eat salmon three times a week, do not get in their mouths. Let's think about our previous example, the Bolivia government wants to start an awareness campaign of the diet and wants to reduce the population's cholesterol indicating salmon. In the country, salmon is very expensive so despite the suggestion half of the population cannot buy it, the effect of this campaign will be more like **ITT** or **ATE**. Exactly, the **ITT** is a better estimator of the*Real World*scenarios (which after all is what we want to explain) because if an intervention is very good but they can not receive all the subjects to which they are assigned (because it is very expensive, or because it gives adverse effects, or thousands of more causes), well it is not so good.
+
+![](imgs/enfoques.jpg){ fig-align="center" width="300"}
