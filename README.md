@@ -12,6 +12,20 @@ It should work with markdown files and plain text files as well.
 
 ---
 
+## ⚙️ Configuration
+
+1. Place your `.qmd` files in the `chapters/` directory. The script will process all files in this directory.
+
+2. You can change the target translation language at the top of the script:
+
+```python
+target_language = "en"  # Change this to any ISO 639-1 language code (e.g., "es", "de", "fr", "it")
+```
+
+3. The script will create a new directory named `chapters.<lang>/` where `<lang>` is the target language code, and save the translated files there.
+
+---
+
 ## 🚀 Features
 
 - **Preserves formatting:** Inline code, footnotes, YAML headers, callouts, etc., are not broken during translation.
@@ -42,21 +56,11 @@ Translated files will be saved in a folder named `chapters.<lang>/`, where `<lan
 
 ---
 
-## ⚙️ Configuration
-
-You can change the target translation language at the top of the script:
-
-```python
-target_language = "en"  # Change this to any ISO 639-1 language code (e.g., "es", "de", "fr", "it")
-```
-
----
-
 ## 📌 Notes
 
-* Translation is done line-by-line with formatting placeholders.
-* A delay (`time.sleep(0.3)`) is added between translations to avoid rate limiting.
-* Only `.qmd` files in the `chapters/` directory will be processed.
+- Translation is done line-by-line with formatting placeholders.
+- A delay (`time.sleep(0.3)`) is added between translations to avoid rate limiting.
+- Only `.qmd` files in the `chapters/` directory will be processed.
 
 ---
 
@@ -79,4 +83,3 @@ Esto es **negrita**, *cursiva*, y `inline_code`, con una nota al pie[^1].
 ## 📝 License
 
 This project is released under the MIT License.
-
