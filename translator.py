@@ -4,7 +4,7 @@ from pathlib import Path
 from deep_translator import GoogleTranslator
 
 CHAPTERS_DIR = "chapters"
-target_language = "en"
+target_language = "es"
 
 def extract_footnote_refs(text):
     """Extract footnote references like [^exp_aleatorios-5] and replace with placeholders."""
@@ -31,16 +31,25 @@ def restore_footnote_refs(text, refs):
 def extract_inline_code(text):
     """Extract inline code (e.g., `r emo::ji("rainbow")`) and replace with placeholders."""
     inline_codes = []
-    def repl(match):
-        inline_codes.append(match.group(0))
+    
+    # First handle inline code that might be within bold
+    def code_repl(match):
+        full_code = match.group(0)  # The entire match including backticks
+        inline_codes.append(full_code)
         return f"<<INLINECODE_{len(inline_codes)-1}>>"
-    text = re.sub(r'`[^`]+`', repl, text)
+    
+    # Match any text surrounded by backticks
+    text = re.sub(r'`[^`]+`', code_repl, text)
+    
     return text, inline_codes
 
 def restore_inline_code(text, inline_codes):
-    """Restore inline code from placeholders."""
+    """Restore inline code from placeholders with robust handling for spacing variations."""
     for idx, code in enumerate(inline_codes):
-        text = text.replace(f"<<INLINECODE_{idx}>>", code)
+        # Create a pattern that matches the placeholder with flexible spacing
+        pattern = r'<<\s*INLINECODE_' + str(idx) + r'\s*>>'
+        replacement = code
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     return text
 
 def translate_bold_italic(text):
@@ -100,27 +109,27 @@ def process_file(content):
     content = re.sub(r'```[\s\S]*?```', code_repl, content)
     content = re.sub(r':::\s*\{[^\}]+\}[\s\S]*?:::', callout_repl, content)
 
-    # Extract inline code
+    # 2. Extract inline code BEFORE extracting footnotes or other elements
     content, inline_codes = extract_inline_code(content)
 
-    # Extract footnote references (not definitions)
+    # 3. Extract footnote references (not definitions)
     content, footnote_refs = extract_footnote_refs(content)
 
-    # Extract YAML frontmatter
+    # 4. Extract YAML frontmatter
     yaml = None
     yaml_match = re.match(r'^---[\s\S]*?---', content)
     if yaml_match:
         yaml = yaml_match.group(0)
         content = content.replace(yaml, "<<YAML>>")
 
-    # Process lines
+    # 5. Process lines
     lines = content.split('\n')
     for i, line in enumerate(lines):
         # Skip code, callout, yaml, empty, or lines with only placeholders
         if (line.strip().startswith('<<') and line.strip().endswith('>>')) or not line.strip():
             continue
         
-        # Footnote definition: only translate after colon - IMPROVED REGEX
+        # Footnote definition: only translate after colon
         m = re.match(r'^(\[\^[^\]]+\]:|\<\<FOOTNOTE_REF_\d+\>\>:)(.*)', line)
         if m:
             marker, txt = m.groups()
@@ -138,7 +147,7 @@ def process_file(content):
     
     content = '\n'.join(lines)
 
-    # Restore everything
+    # 6. Restore everything in reverse order
     if yaml:
         content = content.replace("<<YAML>>", yaml)
     
@@ -148,11 +157,11 @@ def process_file(content):
     for idx, block in enumerate(callouts):
         content = content.replace(f"<<CALLOUT_{idx}>>", block)
     
-    # Restore inline code
-    content = restore_inline_code(content, inline_codes)
-    
     # Restore footnote references
     content = restore_footnote_refs(content, footnote_refs)
+    
+    # Restore inline code LAST, with robust pattern matching
+    content = restore_inline_code(content, inline_codes)
     
     # Final cleanup for markdown spacing
     content = fix_markdown_spacing(content)
