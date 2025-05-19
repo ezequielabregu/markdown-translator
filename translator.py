@@ -52,6 +52,64 @@ def restore_inline_code(text, inline_codes):
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
     return text
 
+def extract_md_images_and_links(text):
+    """Extract Markdown image and link syntax and replace with placeholders."""
+    links = []
+    
+    # First handle images ![alt text](/path)
+    def image_repl(match):
+        alt_text = match.group(1)  # Text between ![...]
+        url = match.group(2)       # URL between (...)
+        
+        # Only translate the alt text, keep URL as-is
+        links.append({
+            'type': 'image',
+            'alt_text': alt_text,
+            'url': url
+        })
+        return f"<<MDLINK_{len(links)-1}>>"
+    
+    # Then handle regular links [text](/path)
+    def link_repl(match):
+        link_text = match.group(1)  # Text between [...]
+        url = match.group(2)        # URL between (...)
+        
+        links.append({
+            'type': 'link',
+            'text': link_text,
+            'url': url
+        })
+        return f"<<MDLINK_{len(links)-1}>>"
+    
+    # Process images first (they start with !)
+    text = re.sub(r'!\[(.*?)\]\((.*?)\)', image_repl, text)
+    
+    # Then process regular links
+    text = re.sub(r'\[(.*?)\]\((.*?)\)', link_repl, text)
+    
+    return text, links
+
+def restore_md_images_and_links(text, links):
+    """Restore Markdown images and links with translated text but original URLs."""
+    for idx, link_data in enumerate(links):
+        if link_data['type'] == 'image':
+            # For images, translate alt text only
+            translated_alt = translate_text_fragment(link_data['alt_text'])
+            # Reconstruct without spaces between components
+            markdown = f"![{translated_alt}]({link_data['url']})"
+        else:
+            # For regular links, translate link text only
+            translated_text = translate_text_fragment(link_data['text'])
+            # Reconstruct without spaces between components
+            markdown = f"[{translated_text}]({link_data['url']})"
+        
+        # Replace the placeholder with properly formatted markdown
+        placeholder = f"<<MDLINK_{idx}>>"
+        pattern = re.compile(r'<<\s*MDLINK_' + str(idx) + r'\s*>>', re.IGNORECASE)
+        text = pattern.sub(markdown, text)
+    
+    return text
+
 def translate_bold_italic(text):
     """Process bold and italic text for translation."""
     # Bold
@@ -109,7 +167,10 @@ def process_file(content):
     content = re.sub(r'```[\s\S]*?```', code_repl, content)
     content = re.sub(r':::\s*\{[^\}]+\}[\s\S]*?:::', callout_repl, content)
 
-    # 2. Extract inline code BEFORE extracting footnotes or other elements
+    # 1b. NEW: Extract markdown images and links
+    content, md_links = extract_md_images_and_links(content)
+
+    # 2. Extract inline code
     content, inline_codes = extract_inline_code(content)
 
     # 3. Extract footnote references (not definitions)
@@ -160,7 +221,10 @@ def process_file(content):
     # Restore footnote references
     content = restore_footnote_refs(content, footnote_refs)
     
-    # Restore inline code LAST, with robust pattern matching
+    # NEW: Restore markdown links and images
+    content = restore_md_images_and_links(content, md_links)
+    
+    # Restore inline code LAST
     content = restore_inline_code(content, inline_codes)
     
     # Final cleanup for markdown spacing
