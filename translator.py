@@ -4,7 +4,7 @@ from pathlib import Path
 from deep_translator import GoogleTranslator
 
 CHAPTERS_DIR = "chapters"
-target_language = "es"
+TARGET_LANGUAGE = "es"
 
 def extract_footnote_refs(text):
     """Extract footnote references like [^exp_aleatorios-5] and replace with placeholders."""
@@ -133,7 +133,7 @@ def translate_text_fragment(text, target_lang=None):
     if not text.strip():
         return text
     if target_lang is None:
-        target_lang = target_language
+        target_lang = TARGET_LANGUAGE
     try:
         translator = GoogleTranslator(source='auto', target=target_lang)
         translated = translator.translate(text)
@@ -248,12 +248,12 @@ def process_file(content):
 
 def main():
     """Main function to translate all Quarto files in the directory."""
-    target_dir = Path(f"{CHAPTERS_DIR}.{target_language}")
+    target_dir = Path(f"{CHAPTERS_DIR}.{TARGET_LANGUAGE}")
     target_dir.mkdir(exist_ok=True)
     source_dir = Path(CHAPTERS_DIR)
     
     for file_path in source_dir.glob("*.qmd"):
-        print(f"Translating: {file_path.name} → {file_path.stem}.{target_language}.qmd")
+        print(f"Translating: {file_path.name} → {file_path.stem}.{TARGET_LANGUAGE}.qmd")
         
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
@@ -261,7 +261,7 @@ def main():
             
             translated_content = process_file(content)
             
-            target_file = target_dir / f"{file_path.stem}.{target_language}.qmd"
+            target_file = target_dir / f"{file_path.stem}.{TARGET_LANGUAGE}.qmd"
             with open(target_file, 'w', encoding='utf-8') as file:
                 file.write(translated_content)
                 
