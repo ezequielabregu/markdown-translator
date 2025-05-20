@@ -266,8 +266,18 @@ def main():
     target_dir.mkdir(exist_ok=True)
     source_dir = Path(CHAPTERS_DIR)
     
-    for file_path in source_dir.glob("*.qmd"):
+    # Find all .qmd files in the source directory
+    qmd_files = list(source_dir.glob("*.qmd"))
+    total_files = len(qmd_files)
+    
+    print(f"Found {total_files} file(s) in {CHAPTERS_DIR}/")
+    print("-" * 40)
+    
+    # Process each file
+    for file_index, file_path in enumerate(qmd_files, 1):
+        print(f"\nFile {file_index}/{total_files} ({(file_index/total_files)*100:.1f}%)")
         print(f"Translating: {file_path.name} → {file_path.stem}.{TARGET_LANGUAGE}.qmd")
+        print("-" * 40)
         
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
@@ -279,10 +289,12 @@ def main():
             with open(target_file, 'w', encoding='utf-8') as file:
                 file.write(translated_content)
                 
+            print(f"✓ Completed: {file_path.name}")
+            
         except Exception as e:
             print(f"✗ Error processing {file_path.name}: {str(e)}")
     
-    print("Translation completed!")
+    print("\nAll translations completed!")
 
 if __name__ == "__main__":
     main()
