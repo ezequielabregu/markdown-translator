@@ -280,11 +280,20 @@ def main():
         print("-" * 40)
         
         try:
-            with open(file_path, 'r', encoding='utf-8') as file:
+            # Read file content and immediately escape backslashes
+            with open(file_path, 'r', encoding='utf-8', errors='replace') as file:
                 content = file.read()
+                
+            # Replace Windows backslashes with double backslashes to escape them
+            content = content.replace('\\', '\\\\')
             
+            # Process the content as usual
             translated_content = process_file(content)
             
+            # Restore single backslashes for the output file
+            translated_content = translated_content.replace('\\\\', '\\')
+            
+            # Write result
             target_file = target_dir / f"{file_path.stem}.{TARGET_LANGUAGE}.qmd"
             with open(target_file, 'w', encoding='utf-8') as file:
                 file.write(translated_content)
