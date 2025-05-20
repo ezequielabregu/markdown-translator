@@ -5,5 +5,6 @@ __pycache__/
 *.pyo
 *.pyd
 *.db
-chapters_*
+chapters.*
 chapters/*
+!chapters/_read.md
