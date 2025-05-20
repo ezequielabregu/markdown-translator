@@ -153,37 +153,51 @@ def fix_markdown_spacing(text):
     
     return text
 
-def process_file(content):
-    """Process a Quarto/Markdown file for translation while preserving formatting."""
-    # 1. Extract code blocks and callouts
-    code_blocks = []
+def extract_callout_blocks(text):
+    """Extract callout blocks with ALL their content, including any nested code blocks."""
     callouts = []
-    def code_repl(match):
-        code_blocks.append(match.group(0))
-        return f"<<CODEBLOCK_{len(code_blocks)-1}>>"
+    
+    # Match opening ::: tag, attributes, all content until closing ::: tag
     def callout_repl(match):
         callouts.append(match.group(0))
         return f"<<CALLOUT_{len(callouts)-1}>>"
-    content = re.sub(r'```[\s\S]*?```', code_repl, content)
-    content = re.sub(r':::\s*\{[^\}]+\}[\s\S]*?:::', callout_repl, content)
+    
+    # Enhanced pattern that captures EVERYTHING between ::: {...} and ending :::
+    # including any nested code blocks
+    pattern = r':::\s*\{[^\}]+\}[\s\S]*?(?=\n:::)\n:::'
+    text = re.sub(pattern, callout_repl, text)
+    
+    return text, callouts
 
-    # 1b. NEW: Extract markdown images and links
+def process_file(content):
+    """Process a Quarto/Markdown file for translation while preserving formatting."""
+    # 1. Extract COMPLETE callout blocks first
+    content, callouts = extract_callout_blocks(content)
+    
+    # 2. Extract remaining code blocks (not in callouts)
+    code_blocks = []
+    def code_repl(match):
+        code_blocks.append(match.group(0))
+        return f"<<CODEBLOCK_{len(code_blocks)-1}>>"
+    content = re.sub(r'```[\s\S]*?```', code_repl, content)
+
+    # 3. Extract markdown images and links
     content, md_links = extract_md_images_and_links(content)
 
-    # 2. Extract inline code
+    # 4. Extract inline code
     content, inline_codes = extract_inline_code(content)
 
-    # 3. Extract footnote references (not definitions)
+    # 5. Extract footnote references (not definitions)
     content, footnote_refs = extract_footnote_refs(content)
 
-    # 4. Extract YAML frontmatter
+    # 6. Extract YAML frontmatter
     yaml = None
     yaml_match = re.match(r'^---[\s\S]*?---', content)
     if yaml_match:
         yaml = yaml_match.group(0)
         content = content.replace(yaml, "<<YAML>>")
 
-    # 5. Process lines
+    # 7. Process lines
     lines = content.split('\n')
     for i, line in enumerate(lines):
         # Skip code, callout, yaml, empty, or lines with only placeholders
@@ -208,20 +222,20 @@ def process_file(content):
     
     content = '\n'.join(lines)
 
-    # 6. Restore everything in reverse order
+    # 8. Restore everything in reverse order
     if yaml:
         content = content.replace("<<YAML>>", yaml)
     
-    # Restore code blocks and callouts
-    for idx, block in enumerate(code_blocks):
-        content = content.replace(f"<<CODEBLOCK_{idx}>>", block)
+    # Restore callouts and code blocks
     for idx, block in enumerate(callouts):
         content = content.replace(f"<<CALLOUT_{idx}>>", block)
+    for idx, block in enumerate(code_blocks):
+        content = content.replace(f"<<CODEBLOCK_{idx}>>", block)
     
     # Restore footnote references
     content = restore_footnote_refs(content, footnote_refs)
     
-    # NEW: Restore markdown links and images
+    # Restore markdown links and images
     content = restore_md_images_and_links(content, md_links)
     
     # Restore inline code LAST

@@ -107,7 +107,69 @@ flowchart TB
 El siguiente diagrama de secuencia ilustra el proceso de grabación y reproducción en el parche. Muestra cómo la entrada de audio se captura, graba, reproduce y se vuelve a grabar en un bucle, enfatizando las resonancias de la habitación.
 
 :::{.column-page-inset}
-<<CODEBLOCK_1>>
+```{mermaid}
+sequenceDiagram
+    participant Start as Start
+    participant Stop as Stop
+    participant Input as Mic
+    participant RecA as Rec A.wav
+    participant PlayA as Play A.wav
+    participant RecB as Rec B.wav
+    participant PlayB as Play B.wav
+    participant Output as Speaker
+    participant Room as Room
+
+    %% Generation 1
+    activate Input
+    Start-->>RecA: Start button
+    activate RecA
+    Input->>RecA: Mic input
+
+
+    Stop--xRecA: Stop Rec A  
+    deactivate RecA   
+    Stop-->>RecB: Start Rec B
+    activate RecB 
+    Input->>RecB: Mic input          
+    Stop-->>PlayA: Start Play A
+    activate PlayA
+
+    PlayA->>Output: Playback A.wav
+    Output->>Room: Acoustic Space
+    Room->>Input: Acoustic reflections captured
+    PlayA--xRecB: Trigger Stop Rec B
+    deactivate RecB
+    deactivate PlayA
+
+    PlayA-->>RecA: Trigger Start Rec B
+    activate RecA
+    Input->>RecA: Mic input 
+    PlayA-->>PlayB: Trigger Start Play A
+    activate PlayB
+
+    %% Generation 2
+    PlayB->>Output: Playback B.wav
+    Output->>Room: Acoustic Space
+    Room->>Input: Acoustic reflections captured
+
+    %% Generation 3 (process repeats)
+    PlayB--xRecA: Trigger Stop Rec A
+    deactivate RecA
+    deactivate PlayB
+    PlayB-->>RecB: Trigger Start Rec B
+    activate RecB 
+    Input->>RecB: Mic input
+    PlayB-->>PlayA: Trigger Start Play A
+    activate PlayA
+    PlayA->>Output: Playback
+    Output->>Room: Acoustic Space
+    Room->>Input: Acoustic reflections captured
+
+    Note over Input,Room: The process continues, alternating between devices and reinforcing the room's resonances.
+    deactivate Input
+    deactivate PlayA
+    deactivate RecB
+```
 :::
 
 ### Paso 1: Entrada y enrutamiento de audio
