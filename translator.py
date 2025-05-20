@@ -199,9 +199,15 @@ def process_file(content):
 
     # 7. Process lines
     lines = content.split('\n')
+    total_lines = len(lines)
+    processed_lines = 0
+    
+    print(f"Starting translation of {total_lines} lines")
+    
     for i, line in enumerate(lines):
         # Skip code, callout, yaml, empty, or lines with only placeholders
         if (line.strip().startswith('<<') and line.strip().endswith('>>')) or not line.strip():
+            processed_lines += 1
             continue
         
         # Footnote definition: only translate after colon
@@ -213,13 +219,21 @@ def process_file(content):
             txt = fix_markdown_spacing(txt)
             txt = translate_text_fragment(txt)
             lines[i] = f"{marker} {txt}"
+            processed_lines += 1
             continue
         
         # Otherwise, translate bold/italic, then the line
         line2 = translate_bold_italic(line)
         line2 = fix_markdown_spacing(line2)
         lines[i] = translate_text_fragment(line2)
+        processed_lines += 1
+        
+        # Update and display progress
+        if processed_lines % 10 == 0 or processed_lines == total_lines:  # Update every 10 lines or at the end
+            progress = (processed_lines / total_lines) * 100
+            print(f"Progress: {progress:.1f}% ({processed_lines}/{total_lines})", end="\r")
     
+    print("\nTranslation complete!")  # Add a newline after progress updates
     content = '\n'.join(lines)
 
     # 8. Restore everything in reverse order
