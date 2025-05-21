@@ -12,7 +12,6 @@ CHAPTERS_DIR = "chapters"
 
 
 def extract_footnote_refs(text):
-    """Extract footnote references like [^exp_aleatorios-5] and replace with placeholders."""
     refs = []
     def repl(match):
         # Check if this is NOT part of a definition (not followed by colon)
@@ -34,7 +33,7 @@ def restore_footnote_refs(text, refs):
     return text
 
 def extract_inline_code(text):
-    """Extract inline code (e.g., `r emo::ji("rainbow")`) and replace with placeholders."""
+    """Extract inline code and replace with placeholders."""
     inline_codes = []
     
     # First handle inline code that might be within bold
