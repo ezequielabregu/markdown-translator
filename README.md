@@ -1,14 +1,6 @@
 # Quarto Translator
 
-This Python script batch-translates `.qmd` (Quarto Markdown) files from a source directory into a target language using the `deep-translator` package (Google Translate backend), while **preserving Markdown formatting**, including:
-
-- Bold and italic text
-- Inline code and code blocks
-- Footnote references and definitions
-- Callouts
-- YAML front matter
-
-It should work with markdown files and plain text files as well.
+This Python script batch-translates .qmd (Quarto Markdown), .md (Markdown), or .txt (plain text) files from a source directory into a target language using the deep-translator package (Google Translate backend), while preserving Markdown formatting
 
 ---
 
@@ -19,7 +11,12 @@ It should work with markdown files and plain text files as well.
 2. You can change the target translation language at the top of the script:
 
 ```python
-target_language = "en"  # Change this to any ISO 639-1 language code (e.g., "es", "de", "fr", "it")
+# Target language for translation. Example: "es" for Spanish, "fr" for French, etc.
+TARGET_LANGUAGE = "es"
+# Options: "qmd", "md", "txt"
+FILE_EXTENSION = "md"
+# Directory containing the chapters to be translated
+CHAPTERS_DIR = "chapters"
 ```
 
 3. The script will create a new directory named `chapters.<lang>/` where `<lang>` is the target language code, and save the translated files there.
@@ -28,9 +25,17 @@ target_language = "en"  # Change this to any ISO 639-1 language code (e.g., "es"
 
 ## 🚀 Features
 
-- **Preserves formatting:** Inline code, footnotes, YAML headers, callouts, etc., are not broken during translation.
-- **Intelligent processing:** Distinguishes between footnote references and definitions.
-- **Handles emphasis:** Bold and italic text are translated properly, with spacing preserved.
+- Preserves formatting: Inline code, footnotes, YAML headers, callouts, etc., are not broken during translation
+
+- Intelligent processing: Distinguishes between footnote references and definitions
+
+- Handles emphasis: Bold and italic text are translated properly, with spacing preserved
+
+- Link preservation: URLs in links and image references are kept intact while translating alt text
+
+- Progress tracking: Shows real-time translation progress for each file
+
+- File format flexibility: Works with Quarto (.qmd), Markdown (.md), or plain text (.txt) files
 
 ---
 
@@ -53,30 +58,6 @@ python translate.py
 ```
 
 Translated files will be saved in a folder named `chapters.<lang>/`, where `<lang>` is defined by the `target_language` variable.
-
----
-
-## 📌 Notes
-
-- Translation is done line-by-line with formatting placeholders.
-- A delay (`time.sleep(0.3)`) is added between translations to avoid rate limiting.
-- Only `.qmd` files in the `chapters/` directory will be processed.
-
----
-
-## 🧪 Example
-
-A line like this:
-
-```markdown
-This is **bold**, *italic*, and `inline_code`, with a footnote[^1].
-```
-
-Will be translated while keeping the format:
-
-```markdown
-Esto es **negrita**, *cursiva*, y `inline_code`, con una nota al pie[^1].
-```
 
 ---
 

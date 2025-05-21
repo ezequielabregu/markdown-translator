@@ -3,8 +3,13 @@ import time
 from pathlib import Path
 from deep_translator import GoogleTranslator
 
-CHAPTERS_DIR = "chapters"
+# Target language for translation. Example: "es" for Spanish, "fr" for French, etc.
 TARGET_LANGUAGE = "es"
+# Options: "qmd", "md", "txt"
+FILE_EXTENSION = "md"  
+# Directory containing the chapters to be translated
+CHAPTERS_DIR = "chapters"
+
 
 def extract_footnote_refs(text):
     """Extract footnote references like [^exp_aleatorios-5] and replace with placeholders."""
@@ -266,17 +271,20 @@ def main():
     target_dir.mkdir(exist_ok=True)
     source_dir = Path(CHAPTERS_DIR)
     
-    # Find all .qmd files in the source directory
-    qmd_files = list(source_dir.glob("*.qmd"))
-    total_files = len(qmd_files)
+    # Ensure file extension has the correct format
+    file_ext = FILE_EXTENSION.lstrip(".")
     
-    print(f"Found {total_files} file(s) in {CHAPTERS_DIR}/")
+    # Find all files with the specified extension in the source directory
+    files = list(source_dir.glob(f"*.{file_ext}"))
+    total_files = len(files)
+    
+    print(f"Found {total_files} {file_ext} file(s) in {CHAPTERS_DIR}/")
     print("-" * 40)
     
     # Process each file
-    for file_index, file_path in enumerate(qmd_files, 1):
+    for file_index, file_path in enumerate(files, 1):
         print(f"\nFile {file_index}/{total_files} ({(file_index/total_files)*100:.1f}%)")
-        print(f"Translating: {file_path.name} → {file_path.stem}.{TARGET_LANGUAGE}.qmd")
+        print(f"Translating: {file_path.name} → {file_path.stem}.{TARGET_LANGUAGE}.{file_ext}")
         print("-" * 40)
         
         try:
@@ -293,8 +301,8 @@ def main():
             # Restore single backslashes for the output file
             translated_content = translated_content.replace('\\\\', '\\')
             
-            # Write result
-            target_file = target_dir / f"{file_path.stem}.{TARGET_LANGUAGE}.qmd"
+            # Write result with the same extension
+            target_file = target_dir / f"{file_path.stem}.{TARGET_LANGUAGE}.{file_ext}"
             with open(target_file, 'w', encoding='utf-8') as file:
                 file.write(translated_content)
                 
